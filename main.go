@@ -18,26 +18,23 @@ type twoFactor struct {
 }
 
 func main() {
-	defer func() {
-		app.Log("main exiting")
-	}()
+
 	app.Route("/", &ui.Body{})
+
 	if app.IsClient {
-		app.Log("run when on browser")
 		app.RunWhenOnBrowser()
-		return
 	} else {
 		servicego.Run(&twoFactor{})
 	}
 
 }
 
-func (t *twoFactor) Start(s service.Service) (err error) {
+func (t *twoFactor) Start(_ service.Service) (err error) {
 	t.serverShutdown, err = server.Run()
 	return nil
 }
 
-func (t *twoFactor) Stop(s service.Service) (err error) {
+func (t *twoFactor) Stop(_ service.Service) (err error) {
 	if t.serverShutdown != nil {
 
 		stopContext, cancel := context.WithTimeout(context.Background(), time.Second*1)
