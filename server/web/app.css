@@ -1,0 +1,36 @@
+
+html, body {
+    background-color: var(--mdc-theme-background);
+    color: var(--mdc-theme-text-primary-on-background);
+    font-family: system-ui, -apple-system, "Segoe UI", "Roboto", "Ubuntu";
+    margin: 0;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-content: flex-start;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    align-content: flex-start;
+    margin: .15em;
+}
+
+.totp {
+    display: inline;
+    background-color: lightblue;
+    margin: .15em;
+    border-radius: .35em;
+    border: .15em solid black;
+    padding: .15em;
+}
+
+.name {
+    display: inline;
+    margin: .15em;
+    border: .15em;
+    padding: .15em;
+}
