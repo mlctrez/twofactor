@@ -38,3 +38,12 @@ html, body {
     border: .15em;
     padding: .15em;
 }
+
+.version {
+    font-size: small;
+    position: absolute;
+    bottom: 0;
+    left: 1em;
+    /*width: 100%;*/
+    height: 2em;
+}

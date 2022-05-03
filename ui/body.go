@@ -81,6 +81,7 @@ func (b *Body) Render() app.UI {
 		b.progress,
 		app.If(b.errorMessage != "", app.Span().Class("error").Text(b.errorMessage)),
 		app.Div().Class("container").Body(app.Range(b.parameters).Slice(b.renderParameterN)),
+		app.Div().Class("version").Text("Version: "+app.Getenv("GOAPP_VERSION")),
 	)
 }
 
