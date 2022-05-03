@@ -10,7 +10,9 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"time"
 
+	brotli "github.com/anargu/gin-brotli"
 	"github.com/gin-gonic/gin"
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
 )
@@ -38,11 +40,7 @@ func Run() (shutdownFunc func(ctx context.Context) error, err error) {
 	gin.SetMode(gin.ReleaseMode)
 	engine := gin.New()
 
-	//engine.Use(gin.Logger(), gin.Recovery(), brotli.Brotli(brotli.DefaultCompression))
-	engine.Use(gin.Logger(), func(c *gin.Context) {
-		c.Next()
-		log.Println("completed", c.Request.RequestURI)
-	})
+	engine.Use(gin.Logger(), gin.Recovery(), brotli.Brotli(brotli.DefaultCompression))
 
 	staticHandler := http.FileServer(http.FS(webDirectory))
 	engine.GET("/web/:path", gin.WrapH(staticHandler))
@@ -63,15 +61,30 @@ func Run() (shutdownFunc func(ctx context.Context) error, err error) {
 }
 
 func BuildHandler() *app.Handler {
+	updateInterval := time.Hour * 24
+	if os.Getenv("DEV") != "" {
+		updateInterval = time.Second * 3
+	}
+
+	var version string
+	if executable, err := os.Executable(); err == nil {
+		var stat os.FileInfo
+		if stat, err = os.Stat(executable); err == nil {
+			version = stat.ModTime().Format(time.RFC3339Nano)
+		}
+	}
+
 	return &app.Handler{
 		Author:          "mlctrez",
-		Description:     "Two Factor PWA",
+		Description:     "Two Factor PWA similar to google authenticator",
 		Name:            "Two Factor",
 		BackgroundColor: "#111",
 		Scripts: []string{
 			"https://cdnjs.cloudflare.com/ajax/libs/material-components-web/13.0.0/material-components-web.js",
 		},
-		ShortName: "goapp-mdc",
+		AutoUpdateInterval: updateInterval,
+		ShortName:          "two factor",
+		Version:            version,
 		Styles: []string{
 			"https://fonts.googleapis.com/icon?family=Material+Icons",
 			"https://fonts.googleapis.com/css2?family=Roboto&display=swap",

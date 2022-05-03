@@ -12,6 +12,10 @@ html, body {
     align-content: flex-start;
 }
 
+.error {
+    color: firebrick;
+}
+
 .row {
     display: flex;
     flex-direction: row;

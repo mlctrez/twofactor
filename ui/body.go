@@ -1,17 +1,15 @@
 package ui
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/dim13/otpauth/migration"
-	"github.com/makiuchi-d/gozxing"
-	"github.com/makiuchi-d/gozxing/qrcode"
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
+	"github.com/mlctrez/goapp-mdc-demo/demo"
 	"github.com/mlctrez/goapp-mdc/pkg/progress"
 	"github.com/mlctrez/imgtofactbp/components/clipboard"
-	"github.com/mlctrez/imgtofactbp/conversions"
 	"github.com/mlctrez/twofactor/store"
 )
 
@@ -23,18 +21,19 @@ type Body struct {
 	app.Compo
 	clipboard    *clipboard.Clipboard
 	storage      *store.Storage
-	parameters   []*migration.Payload_OtpParameters
+	parameters   []*store.Parameter
 	progress     *progress.Circular
+	updater      *demo.AppUpdateBanner
 	errorMessage string
 	done         chan bool
 }
 
 func (b *Body) OnInit() {
-	app.Log("OnInit")
 	b.clipboard = &clipboard.Clipboard{ID: "clipboard"}
 	b.progress = progress.NewCircular("progress", 64)
 	b.storage = &store.Storage{}
 	b.done = make(chan bool, 2)
+	b.updater = &demo.AppUpdateBanner{}
 }
 
 func (b *Body) progressLoop(ctx app.Context) {
@@ -46,11 +45,8 @@ func (b *Body) progressLoop(ctx app.Context) {
 			return
 		case now := <-ticker.C:
 			ctx.Defer(func(context app.Context) {
-				thirties := now.Second() % 30
-				val := 1 - (float64(thirties) / 30)
-				b.progress.SetProgress(val)
+				thirties := b.updateProgress(now)
 				if thirties == 0 {
-					app.Log("update")
 					b.Update()
 				}
 			})
@@ -58,10 +54,17 @@ func (b *Body) progressLoop(ctx app.Context) {
 	}
 }
 
+func (b *Body) updateProgress(now time.Time) int {
+	thirties := now.Second() % 30
+	val := 1 - (float64(thirties) / 30)
+	b.progress.SetProgress(val)
+	return thirties
+}
+
 func (b *Body) OnMount(ctx app.Context) {
-	app.Log("OnMount")
-	ctx.Handle("Clipboard:paste", b.imagePaste)
+	ctx.Handle("Clipboard:paste", b.clipboardPaste)
 	b.parameters = store.Read(ctx, b.storage)
+	b.updateProgress(time.Now())
 	b.progress.Open()
 	ctx.Async(func() { b.progressLoop(ctx) })
 }
@@ -72,10 +75,11 @@ func (b *Body) OnDismount() {
 }
 
 func (b *Body) Render() app.UI {
-	app.Log("Render")
 	return app.Div().Body(
+		b.updater,
 		b.clipboard,
 		b.progress,
+		app.If(b.errorMessage != "", app.Span().Class("error").Text(b.errorMessage)),
 		app.Div().Class("container").Body(app.Range(b.parameters).Slice(b.renderParameterN)),
 	)
 }
@@ -99,37 +103,36 @@ func (b *Body) renderParameterName(i int) app.UI {
 }
 
 func (b *Body) setError(ctx app.Context, err error) {
-	if err != nil {
-		return
+	var errorMessage string
+	if err == nil {
+		errorMessage = ""
+	} else {
+		errorMessage = err.Error()
 	}
 	ctx.Dispatch(func(context app.Context) {
-		b.errorMessage = err.Error()
+		if errorMessage != "" {
+			app.Log(errorMessage)
+		}
+		b.errorMessage = errorMessage
 	})
+	if errorMessage != "" {
+		ctx.After(time.Second*20, func(context app.Context) {
+			b.setError(context, nil)
+		})
+	}
 }
 
-func (b *Body) imagePaste(ctx app.Context, action app.Action) {
+func (b *Body) clipboardPaste(ctx app.Context, action app.Action) {
 	data, ok := action.Value.(*clipboard.PasteData)
 	if !ok {
 		return
 	}
-	img, _, err := conversions.Base64ToImage(data.Data)
-	if err != nil {
-		b.setError(ctx, err)
+	if !strings.HasPrefix(data.Data, "data:image") {
+		b.setError(ctx, errors.New("pasting text not supported"))
 		return
 	}
-	bmp, _ := gozxing.NewBinaryBitmapFromImage(img)
-	qrReader := qrcode.NewQRCodeReader()
-	result, err := qrReader.Decode(bmp, nil)
-	if err != nil {
-		b.setError(ctx, err)
-		return
-	}
-	payload, err := migration.UnmarshalURL(result.GetText())
-	if err != nil {
-		b.setError(ctx, err)
-		return
-	}
-	err = b.storage.Add(payload)
+
+	err := b.storage.Paste(data)
 	if err != nil {
 		b.setError(ctx, err)
 		return

@@ -1,6 +1,6 @@
 
 run: build
-	./temp/twofactor
+	DEV=true ./temp/twofactor
 
 build:	tidy wasm binary
 
@@ -14,6 +14,10 @@ wasm:
 binary:
 	@mkdir -p temp
 	@go build -o temp/twofactor .
+
+deploy: binary
+	scp temp/twofactor goservice:/tmp
+	ssh goservice sudo /tmp/twofactor -action deploy
 
 
 

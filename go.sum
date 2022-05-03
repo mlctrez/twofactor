@@ -7,6 +7,8 @@ github.com/anargu/gin-brotli v0.0.0-20220116052358-12bf532d5267/go.mod h1:Yj3yPP
 github.com/andybalholm/brotli v1.0.1 h1:KqhlKozYbRtJvsPrrEeXcO+N2l6NYT5A2QAFmSULpEc=
 github.com/andybalholm/brotli v1.0.1/go.mod h1:loMXtMfwqflxFJPmdbJO0a3KNoPuLBgiu3qAvBg8x/Y=
 github.com/boombuler/barcode v1.0.0/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
+github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc h1:biVzkmvwrH8WK8raXaxBx6fRVTlJILwEwQGL1I/ByEI=
+github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -62,8 +64,10 @@ github.com/maxence-charriere/go-app/v9 v9.4.1 h1:uDrMIvjzkXwBjw5594i7ZqD5LY5iN7j
 github.com/maxence-charriere/go-app/v9 v9.4.1/go.mod h1:zo0n1kh4OMKn7P+MrTUUi7QwUMU2HOfHsZ293TITtxI=
 github.com/mlctrez/edgeefy v0.0.0-20210214182222-402531e31b4f h1:0lS3N32KTBFoPCQlKxycDibyCh/+H7fq0HKZEh9Hxyc=
 github.com/mlctrez/edgeefy v0.0.0-20210214182222-402531e31b4f/go.mod h1:UA02w6uIC/ctJpaC07Eg2hkE5rLYpfc4pGTKtObS7qM=
-github.com/mlctrez/goapp-mdc v0.1.0 h1:dkwvqjTT66Dst+TsH3uCuUw20D2DHnpDlVSpqgtEeFA=
-github.com/mlctrez/goapp-mdc v0.1.0/go.mod h1:sK/8gdxa39zdEzpoKpf2Hn4a3JioVs+ofCcKLylIZF0=
+github.com/mlctrez/goapp-mdc v0.1.2 h1:bLpVn0XDoBkIJPWj3MnOdhySUe7iOTrlTfJQZQf97do=
+github.com/mlctrez/goapp-mdc v0.1.2/go.mod h1:sK/8gdxa39zdEzpoKpf2Hn4a3JioVs+ofCcKLylIZF0=
+github.com/mlctrez/goapp-mdc-demo v0.0.0 h1:lcKUhYcJIAXUaE/BRxAHbwb71r+ZEDA94rdLQKfUTL8=
+github.com/mlctrez/goapp-mdc-demo v0.0.0/go.mod h1:l3TfpJiDDFAYSm+EEcEFo0SKHkMLDmCiKInJAAFFpl0=
 github.com/mlctrez/imgtofactbp v1.0.0 h1:aMCmd0Low0yNle4K6eAvNmdqR2bIgjwDbpC0JyXdZsA=
 github.com/mlctrez/imgtofactbp v1.0.0/go.mod h1:dumAIfNBzBvJbAuh7OKbfKlHVI0kwLcCx+eSS7qAqKg=
 github.com/mlctrez/servicego v1.3.1 h1:U5rNaC/RS6racWuElVQbOqID+lkoCjx3bki9TZL8yGc=
@@ -80,6 +84,8 @@ github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+github.com/pquerna/otp v1.3.0 h1:oJV/SkzR33anKXwQU3Of42rL4wbrffP4uvUf1SvS5Xs=
+github.com/pquerna/otp v1.3.0/go.mod h1:dkJfzwRKNiegxyNb54X/3fLwhCynbMspSyWKnvi1AEg=
 github.com/ruudk/golang-pdf417 v0.0.0-20181029194003-1af4ab5afa58/go.mod h1:6lfFZQK844Gfx8o5WFuvpxWRwnSoipWe/p622j1v06w=
 github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e h1:MRM5ITcdelLK2j1vwZ3Je0FKVCfqOLp5zO6trqMLYs0=
 github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e/go.mod h1:XV66xRDqSt+GTGFMVlhk3ULuV0y9ZmzeVGR4mloJI3M=
