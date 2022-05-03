@@ -82,6 +82,11 @@ func BuildHandler() *app.Handler {
 		Scripts: []string{
 			"https://cdnjs.cloudflare.com/ajax/libs/material-components-web/13.0.0/material-components-web.js",
 		},
+		Icon: app.Icon{
+			AppleTouch: "/web/logo-192.png",
+			Default:    "/web/logo-192.png",
+			Large:      "/web/logo-512.png",
+		},
 		AutoUpdateInterval: updateInterval,
 		ShortName:          "two factor",
 		Version:            version,

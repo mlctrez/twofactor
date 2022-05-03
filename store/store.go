@@ -199,6 +199,6 @@ func Read(ctx app.Context, storage *Storage) (parameters []*Parameter) {
 }
 
 func Write(ctx app.Context, storage *Storage) (parameters []*Parameter) {
-	ctx.SetState(StorageKey, storage, app.Persist)
+	ctx.SetState(StorageKey, storage, app.Persist, app.Encrypt)
 	return storage.Parameters()
 }
