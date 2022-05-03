@@ -10,6 +10,7 @@ import (
 	"github.com/mlctrez/goapp-mdc-demo/demo"
 	"github.com/mlctrez/goapp-mdc/pkg/progress"
 	"github.com/mlctrez/imgtofactbp/components/clipboard"
+	twofactor "github.com/mlctrez/twofactor"
 	"github.com/mlctrez/twofactor/store"
 )
 
@@ -81,7 +82,7 @@ func (b *Body) Render() app.UI {
 		b.progress,
 		app.If(b.errorMessage != "", app.Span().Class("error").Text(b.errorMessage)),
 		app.Div().Class("container").Body(app.Range(b.parameters).Slice(b.renderParameterN)),
-		app.Div().Class("version").Text("Version: "+app.Getenv("GOAPP_VERSION")),
+		app.Div().Class("version").Text("Version: "+twofactor.Version),
 	)
 }
 

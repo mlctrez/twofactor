@@ -8,6 +8,7 @@ import (
 	"github.com/kardianos/service"
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
 	"github.com/mlctrez/servicego"
+	tf "github.com/mlctrez/twofactor"
 	"github.com/mlctrez/twofactor/server"
 	"github.com/mlctrez/twofactor/ui"
 )
@@ -22,6 +23,7 @@ func main() {
 	app.Route("/", &ui.Body{})
 
 	if app.IsClient {
+		app.Log("version", tf.Version, "commit", tf.Commit)
 		app.RunWhenOnBrowser()
 	} else {
 		servicego.Run(&twoFactor{})
@@ -30,6 +32,7 @@ func main() {
 }
 
 func (t *twoFactor) Start(_ service.Service) (err error) {
+	_ = t.Log().Infof("version %s commit %s", tf.Version, tf.Commit)
 	t.serverShutdown, err = server.Run()
 	return nil
 }

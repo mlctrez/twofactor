@@ -15,6 +15,7 @@ import (
 	brotli "github.com/anargu/gin-brotli"
 	"github.com/gin-gonic/gin"
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
+	twofactor "github.com/mlctrez/twofactor"
 )
 
 //go:embed web/*
@@ -64,16 +65,9 @@ func BuildHandler() *app.Handler {
 	updateInterval := time.Hour * 24
 	if os.Getenv("DEV") != "" {
 		updateInterval = time.Second * 3
+		twofactor.Version = ""
 	}
-
-	var version string
-	if executable, err := os.Executable(); err == nil {
-		var stat os.FileInfo
-		if stat, err = os.Stat(executable); err == nil {
-			version = stat.ModTime().Format(time.RFC3339Nano)
-		}
-	}
-
+	version := twofactor.Version
 	return &app.Handler{
 		Author:          "mlctrez",
 		Description:     "Two Factor PWA similar to google authenticator",
