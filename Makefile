@@ -18,7 +18,7 @@ wasm:
 
 binary: wasm
 	@mkdir -p temp
-	@go build -o temp/twofactor	\
+	@CGO_ENABLED=0  go build -o temp/twofactor	\
 		-ldflags "-w -X $(shell go list).Version=$(VERSION) -X $(shell go list).Commit=$(COMMIT)" \
 		cmd/twofactor/twofactor.go
 

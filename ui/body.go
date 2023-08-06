@@ -89,7 +89,9 @@ func (b *Body) Render() app.UI {
 func (b *Body) renderParameterN(i int) app.UI {
 	param := b.parameters[i]
 	return app.Div().Class("row").Body(
-		app.Span().Class("totp").Text(param.EvaluateString()),
+		app.Span().Class("totp").Text(param.EvaluateString()).OnClick(func(ctx app.Context, e app.Event) {
+			b.clipboard.WriteText(param.EvaluateString())
+		}),
 		b.renderParameterName(i),
 	)
 }
