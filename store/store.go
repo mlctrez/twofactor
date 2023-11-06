@@ -2,7 +2,6 @@ package store
 
 import (
 	"encoding/base32"
-	"encoding/json"
 	"fmt"
 	otpm "github.com/dim13/otpauth/migration"
 	"github.com/makiuchi-d/gozxing"
@@ -12,7 +11,6 @@ import (
 	"github.com/mlctrez/imgtofactbp/conversions"
 	"github.com/pquerna/otp"
 	"net/url"
-	"os"
 	"strings"
 )
 
@@ -22,23 +20,6 @@ type Storage struct {
 	Payloads  []*otpm.Payload               `json:"payloads,omitempty"`
 	OtpParams []*otpm.Payload_OtpParameters `json:"parameters,omitempty"`
 }
-
-//func (s *Storage) Add(payload *otpm.Payload) error {
-//	if s.Payloads == nil {
-//		s.Payloads = []*otpm.Payload{payload}
-//		return nil
-//	}
-//	for _, existing := range s.Payloads {
-//		if existing.BatchId == payload.BatchId && existing.BatchIndex == payload.BatchIndex {
-//			return fmt.Errorf("not replacing existing batch")
-//		}
-//	}
-//	s.Payloads = append(s.Payloads, payload)
-//	sort.SliceStable(s.Payloads, func(i, j int) bool {
-//		return s.Payloads[i].BatchIndex < s.Payloads[j].BatchIndex
-//	})
-//	return nil
-//}
 
 func (s *Storage) Paste(evt *clipboard.PasteData) error {
 	if evt == nil {
@@ -173,7 +154,6 @@ func (s *Storage) Delete(ctx app.Context, start int, end int) {
 
 func Read(ctx app.Context, s *Storage) (parameters []*otpm.Payload_OtpParameters) {
 	ctx.GetState(StorageKey, s)
-	json.NewEncoder(os.Stdout).Encode(s)
 	// Convert old payloads format to new parameters format
 	if s.Payloads != nil {
 		for _, payload := range s.Payloads {
