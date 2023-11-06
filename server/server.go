@@ -12,7 +12,6 @@ import (
 	"os"
 	"time"
 
-	brotli "github.com/anargu/gin-brotli"
 	"github.com/gin-gonic/gin"
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
 	twofactor "github.com/mlctrez/twofactor"
@@ -42,7 +41,7 @@ func Run() (shutdownFunc func(ctx context.Context) error, err error) {
 	engine := gin.New()
 	engine.RedirectTrailingSlash = false
 
-	engine.Use(gin.Logger(), gin.Recovery(), brotli.Brotli(brotli.DefaultCompression))
+	engine.Use(gin.Logger(), gin.Recovery())
 
 	staticHandler := http.FileServer(http.FS(webDirectory))
 	engine.GET("/web/:path", gin.WrapH(staticHandler))
