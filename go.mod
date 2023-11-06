@@ -8,7 +8,7 @@ require (
 	github.com/gin-gonic/gin v1.7.0
 	github.com/kardianos/service v1.2.1
 	github.com/makiuchi-d/gozxing v0.1.1
-	github.com/maxence-charriere/go-app/v9 v9.4.1
+	github.com/maxence-charriere/go-app/v9 v9.8.0
 	github.com/mlctrez/goapp-mdc v0.1.2
 	github.com/mlctrez/goapp-mdc-demo v0.0.0
 	github.com/mlctrez/imgtofactbp v1.0.0
@@ -39,9 +39,9 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e // indirect
 	github.com/ugorji/go/codec v1.1.7 // indirect
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect
-	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/crypto v0.6.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gonum.org/v1/gonum v0.9.3 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect

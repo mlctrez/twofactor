@@ -3,7 +3,7 @@ VERSION=$(shell git describe --abbrev=0 --tags 2>/dev/null || echo "0.0.0")
 COMMIT=$(shell git rev-parse --short HEAD || echo "HEAD")
 
 run: build
-	DEV=true ./temp/twofactor
+	PORT=8080 DEV=true ./temp/twofactor
 
 build:	tidy wasm binary
 

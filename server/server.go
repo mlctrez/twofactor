@@ -40,14 +40,18 @@ func Run() (shutdownFunc func(ctx context.Context) error, err error) {
 
 	gin.SetMode(gin.ReleaseMode)
 	engine := gin.New()
+	engine.RedirectTrailingSlash = false
 
 	engine.Use(gin.Logger(), gin.Recovery(), brotli.Brotli(brotli.DefaultCompression))
 
 	staticHandler := http.FileServer(http.FS(webDirectory))
 	engine.GET("/web/:path", gin.WrapH(staticHandler))
 
-	engine.NoRoute(gin.WrapH(BuildHandler()))
-	//engine.RedirectTrailingSlash = false
+	goAppHandler := gin.WrapH(BuildHandler())
+	engine.NoRoute(func(c *gin.Context) {
+		c.Writer.WriteHeader(200)
+		goAppHandler(c)
+	})
 
 	server := &http.Server{Handler: engine}
 
@@ -84,6 +88,7 @@ func BuildHandler() *app.Handler {
 		AutoUpdateInterval: updateInterval,
 		ShortName:          "two factor",
 		Version:            version,
+		LoadingLabel:       " ",
 		Styles: []string{
 			"https://fonts.googleapis.com/icon?family=Material+Icons",
 			"https://fonts.googleapis.com/css2?family=Roboto&display=swap",
@@ -91,5 +96,6 @@ func BuildHandler() *app.Handler {
 			"/web/app.css",
 		},
 		Title: "Two Factor",
+		Env:   map[string]string{"DEV": os.Getenv("DEV")},
 	}
 }

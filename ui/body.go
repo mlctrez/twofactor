@@ -1,8 +1,12 @@
 package ui
 
 import (
+	"crypto/rand"
+	"encoding/base32"
 	"errors"
 	"fmt"
+	"github.com/dim13/otpauth/migration"
+	"strconv"
 	"strings"
 	"time"
 
@@ -22,11 +26,21 @@ type Body struct {
 	app.Compo
 	clipboard    *clipboard.Clipboard
 	storage      *store.Storage
-	parameters   []*store.Parameter
+	parameters   []*migration.Payload_OtpParameters
 	progress     *progress.Circular
 	updater      *demo.AppUpdateBanner
 	errorMessage string
 	done         chan bool
+	start        int64
+	end          int64
+}
+
+func (b *Body) OnAppUpdate(context app.Context) {
+	if app.Getenv("DEV") != "" {
+		if context.AppUpdateAvailable() {
+			context.Reload()
+		}
+	}
 }
 
 func (b *Body) OnInit() {
@@ -82,8 +96,70 @@ func (b *Body) Render() app.UI {
 		b.progress,
 		app.If(b.errorMessage != "", app.Span().Class("error").Text(b.errorMessage)),
 		app.Div().Class("container").Body(app.Range(b.parameters).Slice(b.renderParameterN)),
+		app.If(app.Getenv("DEV") != "", b.newRandom()),
+		b.edit(),
 		app.Div().Class("version").Text("Version: "+twofactor.Version),
 	)
+}
+
+func (b *Body) edit() app.UI {
+	return app.Div().Body(
+		app.Label().For("startAt").Text("start"),
+		app.Input().Size(5).ID("startAt").Type("text").OnInput(func(ctx app.Context, e app.Event) {
+			var err error
+			b.start, err = strconv.ParseInt(ctx.JSSrc().Get("value").String(), 10, 16)
+			if err != nil {
+				b.errorMessage = err.Error()
+				return
+			}
+		}),
+		app.Label().For("endAt").Text("end"),
+		app.Input().Size(5).ID("endAt").Type("text").OnInput(func(ctx app.Context, e app.Event) {
+			var err error
+			b.end, err = strconv.ParseInt(ctx.JSSrc().Get("value").String(), 10, 16)
+			if err != nil {
+				b.errorMessage = err.Error()
+				return
+			}
+		}),
+		app.Button().Text("switch").OnClick(func(ctx app.Context, e app.Event) {
+			b.storage.Switch(ctx, int(b.start), int(b.end))
+			b.Update()
+		}),
+		app.Button().Text("delete").OnClick(func(ctx app.Context, e app.Event) {
+			b.storage.Delete(ctx, int(b.start), int(b.end))
+			b.parameters = b.storage.OtpParams
+			b.Update()
+		}),
+	)
+}
+
+func (b *Body) newRandom() app.UI {
+	return app.Button().Text("random").OnClick(func(ctx app.Context, e app.Event) {
+
+		secret := make([]byte, 10)
+		_, err := rand.Read(secret)
+		if err != nil {
+			b.errorMessage = err.Error()
+			return
+		}
+
+		newParams := &migration.Payload_OtpParameters{
+			Secret:    secret,
+			Name:      "test account",
+			Issuer:    "issuer",
+			Algorithm: migration.Payload_ALGORITHM_SHA1,
+			Digits:    migration.Payload_DIGIT_COUNT_SIX,
+			Type:      migration.Payload_OTP_TYPE_TOTP,
+		}
+
+		err = b.storage.AddTotp(newParams.URL().String())
+		if err != nil {
+			b.errorMessage = err.Error()
+		}
+		b.parameters = store.Write(ctx, b.storage)
+
+	})
 }
 
 func (b *Body) renderParameterN(i int) app.UI {
@@ -93,6 +169,7 @@ func (b *Body) renderParameterN(i int) app.UI {
 			b.clipboard.WriteText(param.EvaluateString())
 		}),
 		b.renderParameterName(i),
+		app.Span().Class("name").Text(base32.StdEncoding.EncodeToString(param.Secret)),
 	)
 }
 
@@ -103,6 +180,7 @@ func (b *Body) renderParameterName(i int) app.UI {
 	if param.Issuer != "" && !strings.HasPrefix(param.Name, param.Issuer) {
 		name = fmt.Sprintf("%s %s", param.Issuer, param.Name)
 	}
+	name = fmt.Sprintf("%02d %s", i, name)
 	return app.Span().Class("name").Text(name)
 }
 

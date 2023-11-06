@@ -2,3 +2,4 @@
 .idea/
 temp/
 app.wasm
+/store/decrypt/

@@ -2,60 +2,43 @@ package store
 
 import (
 	"encoding/base32"
+	"encoding/json"
 	"fmt"
-	"net/url"
-	"sort"
-	"strconv"
-	"strings"
-	"time"
-
-	"github.com/dim13/otpauth/migration"
+	otpm "github.com/dim13/otpauth/migration"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/qrcode"
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
 	"github.com/mlctrez/imgtofactbp/components/clipboard"
 	"github.com/mlctrez/imgtofactbp/conversions"
 	"github.com/pquerna/otp"
+	"net/url"
+	"os"
+	"strings"
 )
 
 const StorageKey = "twoFactor_storage"
 
 type Storage struct {
-	Payloads []*migration.Payload `json:"payloads"`
+	Payloads  []*otpm.Payload               `json:"payloads,omitempty"`
+	OtpParams []*otpm.Payload_OtpParameters `json:"parameters,omitempty"`
 }
 
-func (s *Storage) Add(payload *migration.Payload) error {
-	if s.Payloads == nil {
-		s.Payloads = []*migration.Payload{payload}
-		return nil
-	}
-	for _, existing := range s.Payloads {
-		if existing.BatchId == payload.BatchId && existing.BatchIndex == payload.BatchIndex {
-			return fmt.Errorf("not replacing existing batch")
-		}
-	}
-	s.Payloads = append(s.Payloads, payload)
-	sort.SliceStable(s.Payloads, func(i, j int) bool {
-		return s.Payloads[i].BatchIndex < s.Payloads[j].BatchIndex
-	})
-	return nil
-}
-
-type Parameter struct {
-	*migration.Payload_OtpParameters
-}
-
-func (s *Storage) Parameters() (parameters []*Parameter) {
-	if s == nil || s.Payloads == nil {
-		return
-	}
-	for _, payload := range s.Payloads {
-		for _, parameter := range payload.OtpParameters {
-			parameters = append(parameters, &Parameter{parameter})
-		}
-	}
-	return parameters
-}
+//func (s *Storage) Add(payload *otpm.Payload) error {
+//	if s.Payloads == nil {
+//		s.Payloads = []*otpm.Payload{payload}
+//		return nil
+//	}
+//	for _, existing := range s.Payloads {
+//		if existing.BatchId == payload.BatchId && existing.BatchIndex == payload.BatchIndex {
+//			return fmt.Errorf("not replacing existing batch")
+//		}
+//	}
+//	s.Payloads = append(s.Payloads, payload)
+//	sort.SliceStable(s.Payloads, func(i, j int) bool {
+//		return s.Payloads[i].BatchIndex < s.Payloads[j].BatchIndex
+//	})
+//	return nil
+//}
 
 func (s *Storage) Paste(evt *clipboard.PasteData) error {
 	if evt == nil {
@@ -84,14 +67,10 @@ func (s *Storage) Paste(evt *clipboard.PasteData) error {
 		return s.AddTotp(text)
 	}
 
-	payload, err := migration.UnmarshalURL(text)
-	if err != nil {
-		return err
-	}
-	return s.Add(payload)
+	return fmt.Errorf("unhandled data %q", text)
 }
 
-func parseTotpFromString(text string) (*migration.Payload_OtpParameters, error) {
+func parseTotpFromString(text string) (*otpm.Payload_OtpParameters, error) {
 	key, err := otp.NewKeyFromURL(text)
 	if err != nil {
 		return nil, err
@@ -113,40 +92,36 @@ func parseTotpFromString(text string) (*migration.Payload_OtpParameters, error) 
 	// &issuer=Proper+Key
 	// &period=30
 	// &secret=xxxxx
-	var algorithm migration.Payload_Algorithm
+	algorithm := otpm.Payload_ALGORITHM_SHA1
 	switch u.Query().Get("algorithm") {
 	case "SHA1":
-		algorithm = migration.Payload_ALGORITHM_SHA1
+		algorithm = otpm.Payload_ALGORITHM_SHA1
 	case "SHA256":
-		algorithm = migration.Payload_ALGORITHM_SHA256
+		algorithm = otpm.Payload_ALGORITHM_SHA256
 	case "SHA512":
-		algorithm = migration.Payload_ALGORITHM_SHA512
+		algorithm = otpm.Payload_ALGORITHM_SHA512
 	case "MD5":
-		algorithm = migration.Payload_ALGORITHM_MD5
-	default:
-		return nil, fmt.Errorf("unsupported algorithm %q", u.Query().Get("algorithm"))
+		algorithm = otpm.Payload_ALGORITHM_MD5
 	}
-	var digits migration.Payload_DigitCount
+	digits := otpm.Payload_DIGIT_COUNT_SIX
 	switch u.Query().Get("digits") {
 	case "6":
-		digits = migration.Payload_DIGIT_COUNT_SIX
+		digits = otpm.Payload_DIGIT_COUNT_SIX
 	case "8":
-		digits = migration.Payload_DIGIT_COUNT_EIGHT
-	default:
-		return nil, fmt.Errorf("unsupported digits %q", u.Query().Get("digits"))
+		digits = otpm.Payload_DIGIT_COUNT_EIGHT
 	}
 
-	var keyType migration.Payload_OtpType
+	var keyType otpm.Payload_OtpType
 	switch key.Type() {
 	case "totp":
-		keyType = migration.Payload_OTP_TYPE_TOTP
+		keyType = otpm.Payload_OTP_TYPE_TOTP
 	case "hotp":
-		keyType = migration.Payload_OTP_TYPE_HOTP
+		keyType = otpm.Payload_OTP_TYPE_HOTP
 	default:
 		return nil, fmt.Errorf("unsupported type %q", key.Type())
 	}
 
-	newParams := &migration.Payload_OtpParameters{
+	newParams := &otpm.Payload_OtpParameters{
 		Secret:    secret,
 		Name:      key.AccountName(),
 		Issuer:    key.Issuer(),
@@ -165,40 +140,51 @@ func (s *Storage) AddTotp(text string) error {
 		return err
 	}
 
-	added := false
-	for _, payload := range s.Payloads {
-		if len(payload.OtpParameters) < 10 {
-			added = true
-			payload.OtpParameters = append(payload.OtpParameters, newParams)
-		}
-	}
-
-	if !added {
-		var batchId int64
-		batchId, err = strconv.ParseInt(time.Now().UTC().Format("2006010215"), 10, 32)
-		if err != nil {
-			return err
-		}
-
-		return s.Add(&migration.Payload{
-			OtpParameters: []*migration.Payload_OtpParameters{newParams},
-			Version:       1,
-			BatchSize:     1,
-			BatchIndex:    0,
-			BatchId:       int32(batchId)},
-		)
-	}
-
+	s.OtpParams = append(s.OtpParams, newParams)
 	return nil
-
 }
 
-func Read(ctx app.Context, storage *Storage) (parameters []*Parameter) {
-	ctx.GetState(StorageKey, storage)
-	return storage.Parameters()
+func (s *Storage) Switch(ctx app.Context, start int, end int) {
+	if start < 0 || end < 0 || start > len(s.OtpParams) || end > len(s.OtpParams) {
+		return
+	}
+	s.OtpParams[start], s.OtpParams[end] = s.OtpParams[end], s.OtpParams[start]
+	Write(ctx, s)
+	ctx.Dispatch(nil)
 }
 
-func Write(ctx app.Context, storage *Storage) (parameters []*Parameter) {
+func (s *Storage) Delete(ctx app.Context, start int, end int) {
+	var newParms []*otpm.Payload_OtpParameters
+	for i, param := range s.OtpParams {
+		if i == start && end == 9999 {
+			// nothing
+		} else {
+			newParms = append(newParms, param)
+		}
+	}
+	s.OtpParams = newParms
+	Write(ctx, s)
+}
+
+func Read(ctx app.Context, s *Storage) (parameters []*otpm.Payload_OtpParameters) {
+	ctx.GetState(StorageKey, s)
+	json.NewEncoder(os.Stdout).Encode(s)
+	// Convert old payloads format to new parameters format
+	if s.Payloads != nil {
+		for _, payload := range s.Payloads {
+			for _, parameter := range payload.OtpParameters {
+				parameters = append(parameters, parameter)
+			}
+		}
+		s.OtpParams = parameters
+		s.Payloads = nil
+		Write(ctx, s)
+		return s.OtpParams
+	}
+	return s.OtpParams
+}
+
+func Write(ctx app.Context, storage *Storage) (parameters []*otpm.Payload_OtpParameters) {
 	ctx.SetState(StorageKey, storage, app.Persist, app.Encrypt)
-	return storage.Parameters()
+	return storage.OtpParams
 }
