@@ -67,7 +67,12 @@ func (s *Storage) Paste(evt *clipboard.PasteData) error {
 		return s.AddTotp(text)
 	}
 
-	return fmt.Errorf("unhandled data %q", text)
+	payload, err := otpm.UnmarshalURL(text)
+	if err != nil {
+		return err
+	}
+	s.OtpParams = append(s.OtpParams, payload.OtpParameters...)
+	return nil
 }
 
 func parseTotpFromString(text string) (*otpm.Payload_OtpParameters, error) {

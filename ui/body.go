@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"crypto/rand"
-	"encoding/base32"
 	"errors"
 	"fmt"
 	"github.com/dim13/otpauth/migration"
@@ -96,7 +94,6 @@ func (b *Body) Render() app.UI {
 		b.progress,
 		app.If(b.errorMessage != "", app.Span().Class("error").Text(b.errorMessage)),
 		app.Div().Class("container").Body(app.Range(b.parameters).Slice(b.renderParameterN)),
-		app.If(app.Getenv("DEV") != "", b.newRandom()),
 		b.edit(),
 		app.Div().Class("version").Text("Version: "+twofactor.Version),
 	)
@@ -134,34 +131,6 @@ func (b *Body) edit() app.UI {
 	)
 }
 
-func (b *Body) newRandom() app.UI {
-	return app.Button().Text("random").OnClick(func(ctx app.Context, e app.Event) {
-
-		secret := make([]byte, 10)
-		_, err := rand.Read(secret)
-		if err != nil {
-			b.errorMessage = err.Error()
-			return
-		}
-
-		newParams := &migration.Payload_OtpParameters{
-			Secret:    secret,
-			Name:      "test account",
-			Issuer:    "issuer",
-			Algorithm: migration.Payload_ALGORITHM_SHA1,
-			Digits:    migration.Payload_DIGIT_COUNT_SIX,
-			Type:      migration.Payload_OTP_TYPE_TOTP,
-		}
-
-		err = b.storage.AddTotp(newParams.URL().String())
-		if err != nil {
-			b.errorMessage = err.Error()
-		}
-		b.parameters = store.Write(ctx, b.storage)
-
-	})
-}
-
 func (b *Body) renderParameterN(i int) app.UI {
 	param := b.parameters[i]
 	return app.Div().Class("row").Body(
@@ -169,7 +138,7 @@ func (b *Body) renderParameterN(i int) app.UI {
 			b.clipboard.WriteText(param.EvaluateString())
 		}),
 		b.renderParameterName(i),
-		app.Span().Class("name").Text(base32.StdEncoding.EncodeToString(param.Secret)),
+		//app.Span().Class("name").Text(base32.StdEncoding.EncodeToString(param.Secret)),
 	)
 }
 
@@ -220,4 +189,5 @@ func (b *Body) clipboardPaste(ctx app.Context, action app.Action) {
 		return
 	}
 	b.parameters = store.Write(ctx, b.storage)
+	b.Update()
 }
