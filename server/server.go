@@ -108,6 +108,7 @@ func BuildHandler() *app.Handler {
 			AppleTouch: "/web/logo-192.png",
 			Default:    "/web/logo-192.png",
 			Large:      "/web/logo-512.png",
+			SVG:        "/web/logo-512.svg",
 		},
 		AutoUpdateInterval: updateInterval,
 		ShortName:          "two factor",
