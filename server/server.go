@@ -6,6 +6,7 @@ import (
 	"context"
 	"embed"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -45,6 +46,30 @@ func Run() (shutdownFunc func(ctx context.Context) error, err error) {
 
 	staticHandler := http.FileServer(http.FS(webDirectory))
 	engine.GET("/web/:path", gin.WrapH(staticHandler))
+	engine.GET("/api/storage", func(c *gin.Context) {
+		store, se := os.ReadFile("storage.json")
+		if se != nil {
+			c.Status(500)
+			return
+		}
+		c.Header("Content-Type", "application/json")
+		_, we := c.Writer.Write(store)
+		if we != nil {
+			log.Println("error writing storage.json")
+		}
+	})
+	engine.POST("/api/storage", func(c *gin.Context) {
+		store, je := io.ReadAll(c.Request.Body)
+		if je != nil {
+			c.Status(500)
+			return
+		}
+		se := os.WriteFile("storage.json", store, 0644)
+		if se != nil {
+			c.Status(500)
+			return
+		}
+	})
 
 	goAppHandler := gin.WrapH(BuildHandler())
 	engine.NoRoute(func(c *gin.Context) {

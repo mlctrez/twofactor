@@ -1,9 +1,12 @@
 package ui
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/dim13/otpauth/migration"
+	fetch "github.com/mlctrez/wasm-fetch"
 	"strconv"
 	"strings"
 	"time"
@@ -88,15 +91,18 @@ func (b *Body) OnDismount() {
 }
 
 func (b *Body) Render() app.UI {
-	return app.Div().Body(
-		b.updater,
-		b.clipboard,
-		b.progress,
-		app.If(b.errorMessage != "", app.Span().Class("error").Text(b.errorMessage)),
-		app.Div().Class("container").Body(app.Range(b.parameters).Slice(b.renderParameterN)),
-		b.edit(),
-		app.Div().Class("version").Text("Version: "+twofactor.Version),
-	)
+	fmt.Println("Body Render")
+	var body []app.UI
+	body = append(body, b.updater, b.clipboard, b.progress)
+	body = append(body, app.Span().Class("error").Text(b.errorMessage))
+	body = append(body, app.Div().Class("container").Body(app.Range(b.parameters).Slice(b.renderParameterN)))
+
+	if app.IsClient && app.Window().URL().Path == "/edit" {
+		body = append(body, app.Hr(), b.edit())
+	}
+	body = append(body, app.Div().Class("version").Text("Version: "+twofactor.Version))
+
+	return app.Div().Body(body...)
 }
 
 func (b *Body) edit() app.UI {
@@ -125,6 +131,46 @@ func (b *Body) edit() app.UI {
 		}),
 		app.Button().Text("delete").OnClick(func(ctx app.Context, e app.Event) {
 			b.storage.Delete(ctx, int(b.start), int(b.end))
+			b.parameters = b.storage.OtpParams
+			b.Update()
+		}),
+		app.Button().Text("upload").OnClick(func(ctx app.Context, e app.Event) {
+			body := &bytes.Buffer{}
+			err := json.NewEncoder(body).Encode(b.storage)
+			if err != nil {
+				b.errorMessage = err.Error()
+				return
+			}
+			resp, err := fetch.Fetch("/api/storage", &fetch.Opts{Method: "POST", Body: body})
+			if err != nil {
+				b.errorMessage = err.Error()
+				return
+			}
+			if resp.Status != 200 {
+				b.errorMessage = resp.StatusText
+				return
+			}
+			b.errorMessage = "uploaded"
+			ctx.After(2*time.Second, func(context app.Context) { b.errorMessage = "" })
+		}),
+		app.Button().Text("download").OnClick(func(ctx app.Context, e app.Event) {
+			resp, err := fetch.Fetch("/api/storage", &fetch.Opts{})
+			if err != nil {
+				b.errorMessage = err.Error()
+				return
+			}
+			if resp.Status != 200 {
+				b.errorMessage = resp.StatusText
+				return
+			}
+			downloadStorage := &store.Storage{}
+			err = json.Unmarshal(resp.Body, downloadStorage)
+			if err != nil {
+				b.errorMessage = err.Error()
+				return
+			}
+			store.Write(ctx, downloadStorage)
+			store.Read(ctx, b.storage)
 			b.parameters = b.storage.OtpParams
 			b.Update()
 		}),

@@ -21,6 +21,7 @@ type twoFactor struct {
 func main() {
 
 	app.Route("/", &ui.Body{})
+	app.Route("/edit", &ui.Body{})
 
 	if app.IsClient {
 		app.Log("version", tf.Version, "commit", tf.Commit)

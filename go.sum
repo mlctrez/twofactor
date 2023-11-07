@@ -2,10 +2,6 @@ dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7
 gioui.org v0.0.0-20210308172011-57750fc8a0a6/go.mod h1:RSH6KIUZ0p2xy5zHDxgAM4zumjgTw83q2ge/PI+yyw8=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/ajstarks/svgo v0.0.0-20180226025133-644b8db467af/go.mod h1:K08gAheRH3/J6wwsYMMT4xOr94bZjxIelGM0+d/wbFw=
-github.com/anargu/gin-brotli v0.0.0-20220116052358-12bf532d5267 h1:vDHsaEcs/Q0dwetADENtwus6W1ccaZ9h3KBTm0d2X0g=
-github.com/anargu/gin-brotli v0.0.0-20220116052358-12bf532d5267/go.mod h1:Yj3yPP/vi87JjwylUTCMyd6FrOfGqP1AHk0305hDm2o=
-github.com/andybalholm/brotli v1.0.1 h1:KqhlKozYbRtJvsPrrEeXcO+N2l6NYT5A2QAFmSULpEc=
-github.com/andybalholm/brotli v1.0.1/go.mod h1:loMXtMfwqflxFJPmdbJO0a3KNoPuLBgiu3qAvBg8x/Y=
 github.com/boombuler/barcode v1.0.0/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc h1:biVzkmvwrH8WK8raXaxBx6fRVTlJILwEwQGL1I/ByEI=
 github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
@@ -70,6 +66,8 @@ github.com/mlctrez/imgtofactbp v1.0.0 h1:aMCmd0Low0yNle4K6eAvNmdqR2bIgjwDbpC0JyX
 github.com/mlctrez/imgtofactbp v1.0.0/go.mod h1:dumAIfNBzBvJbAuh7OKbfKlHVI0kwLcCx+eSS7qAqKg=
 github.com/mlctrez/servicego v1.3.1 h1:U5rNaC/RS6racWuElVQbOqID+lkoCjx3bki9TZL8yGc=
 github.com/mlctrez/servicego v1.3.1/go.mod h1:h743fCA0QegJEVpSTceFvnyy9qG2j7CMCryL9iALtlo=
+github.com/mlctrez/wasm-fetch v0.2.0 h1:5aHFhBGImhGDWMn29Ogmxn40u4k8/VvKh7VxcjF1ks0=
+github.com/mlctrez/wasm-fetch v0.2.0/go.mod h1:Re9dkl1WesgmO7rl2aiiCiH8UvXZH+Gzy1hFEBnLtl8=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 h1:ZqeYNhU3OHLH3mGKHDcjJRFFRrJa6eAM5H+CtDdOsPc=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742 h1:Esafd1046DLDQ0W1YjYsBW+p8U2u7vzgW2SQVmlNazg=
