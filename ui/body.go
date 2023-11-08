@@ -91,16 +91,24 @@ func (b *Body) OnDismount() {
 }
 
 func (b *Body) Render() app.UI {
-	fmt.Println("Body Render")
 	var body []app.UI
+
 	body = append(body, b.updater, b.clipboard, b.progress)
 	body = append(body, app.Span().Class("error").Text(b.errorMessage))
 	body = append(body, app.Div().Class("container").Body(app.Range(b.parameters).Slice(b.renderParameterN)))
 
-	if app.IsClient && app.Window().URL().Path == "/edit" {
+	isEdit := app.IsClient && app.Window().URL().Path == "/edit"
+	if isEdit {
 		body = append(body, app.Hr(), b.edit())
 	}
-	body = append(body, app.Div().Class("version").Text("Version: "+twofactor.Version))
+	body = append(body, app.Div().OnClick(func(ctx app.Context, e app.Event) {
+		if isEdit {
+			app.Window().Get("location").Set("href", "/")
+		} else {
+			app.Window().Get("location").Set("href", "/edit")
+		}
+		b.Update()
+	}).Class("version").Text("Version: "+twofactor.Version))
 
 	return app.Div().Body(body...)
 }
@@ -134,6 +142,7 @@ func (b *Body) edit() app.UI {
 			b.parameters = b.storage.OtpParams
 			b.Update()
 		}),
+		app.Hr(),
 		app.Button().Text("upload").OnClick(func(ctx app.Context, e app.Event) {
 			body := &bytes.Buffer{}
 			err := json.NewEncoder(body).Encode(b.storage)
@@ -189,13 +198,16 @@ func (b *Body) renderParameterN(i int) app.UI {
 }
 
 func (b *Body) renderParameterName(i int) app.UI {
+	isEdit := app.IsClient && app.Window().URL().Path == "/edit"
 	param := b.parameters[i]
 
 	var name = param.Name
 	if param.Issuer != "" && !strings.HasPrefix(param.Name, param.Issuer) {
 		name = fmt.Sprintf("%s %s", param.Issuer, param.Name)
 	}
-	name = fmt.Sprintf("%02d %s", i, name)
+	if isEdit {
+		name = fmt.Sprintf("%02d %s", i, name)
+	}
 	return app.Span().Class("name").Text(name)
 }
 
