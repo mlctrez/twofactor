@@ -8,8 +8,6 @@ require (
 	github.com/kardianos/service v1.2.1
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/maxence-charriere/go-app/v9 v9.8.0
-	github.com/mlctrez/goapp-mdc v0.1.2
-	github.com/mlctrez/goapp-mdc-demo v0.0.0
 	github.com/mlctrez/imgtofactbp v1.0.0
 	github.com/mlctrez/servicego v1.3.1
 	github.com/mlctrez/wasm-fetch v0.2.0

@@ -12,8 +12,6 @@ import (
 	"time"
 
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
-	"github.com/mlctrez/goapp-mdc-demo/demo"
-	"github.com/mlctrez/goapp-mdc/pkg/progress"
 	"github.com/mlctrez/imgtofactbp/components/clipboard"
 	twofactor "github.com/mlctrez/twofactor"
 	"github.com/mlctrez/twofactor/store"
@@ -28,12 +26,11 @@ type Body struct {
 	clipboard    *clipboard.Clipboard
 	storage      *store.Storage
 	parameters   []*migration.Payload_OtpParameters
-	progress     *progress.Circular
-	updater      *demo.AppUpdateBanner
 	errorMessage string
 	done         chan bool
 	start        int64
 	end          int64
+	timer        string
 }
 
 func (b *Body) OnAppUpdate(context app.Context) {
@@ -46,10 +43,8 @@ func (b *Body) OnAppUpdate(context app.Context) {
 
 func (b *Body) OnInit() {
 	b.clipboard = &clipboard.Clipboard{ID: "clipboard"}
-	b.progress = progress.NewCircular("progress", 64)
 	b.storage = &store.Storage{}
 	b.done = make(chan bool, 2)
-	b.updater = &demo.AppUpdateBanner{}
 }
 
 func (b *Body) progressLoop(ctx app.Context) {
@@ -61,27 +56,22 @@ func (b *Body) progressLoop(ctx app.Context) {
 			return
 		case now := <-ticker.C:
 			ctx.Defer(func(context app.Context) {
-				thirties := b.updateProgress(now)
-				if thirties == 0 {
-					b.Update()
-				}
+				b.updateProgress(now)
 			})
 		}
 	}
 }
 
-func (b *Body) updateProgress(now time.Time) int {
-	thirties := now.Second() % 30
-	val := 1 - (float64(thirties) / 30)
-	b.progress.SetProgress(val)
-	return thirties
+func (b *Body) updateProgress(now time.Time) {
+	thirties := now.Add(5*time.Second).Second() % 30
+	b.timer = fmt.Sprintf("%d", 30-thirties)
+	b.Update()
 }
 
 func (b *Body) OnMount(ctx app.Context) {
 	ctx.Handle("Clipboard:paste", b.clipboardPaste)
 	b.parameters = store.Read(ctx, b.storage)
 	b.updateProgress(time.Now())
-	b.progress.Open()
 	ctx.Async(func() { b.progressLoop(ctx) })
 }
 
@@ -93,7 +83,7 @@ func (b *Body) OnDismount() {
 func (b *Body) Render() app.UI {
 	var body []app.UI
 
-	body = append(body, b.updater, b.clipboard, b.progress)
+	body = append(body, app.Span().Class("timer").Text(b.timer), app.Br(), b.clipboard)
 	body = append(body, app.Span().Class("error").Text(b.errorMessage))
 	body = append(body, app.Div().Class("container").Body(app.Range(b.parameters).Slice(b.renderParameterN)))
 

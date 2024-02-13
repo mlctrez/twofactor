@@ -58,10 +58,6 @@ github.com/maxence-charriere/go-app/v9 v9.8.0 h1:rDfLNvxIKXyjpRS76P45kn9Xj8Iumwf
 github.com/maxence-charriere/go-app/v9 v9.8.0/go.mod h1:gzgFoeaDuoNHw9MbJraTCKIoKtZ/SoIfOIHHn2FOffc=
 github.com/mlctrez/edgeefy v0.0.0-20210214182222-402531e31b4f h1:0lS3N32KTBFoPCQlKxycDibyCh/+H7fq0HKZEh9Hxyc=
 github.com/mlctrez/edgeefy v0.0.0-20210214182222-402531e31b4f/go.mod h1:UA02w6uIC/ctJpaC07Eg2hkE5rLYpfc4pGTKtObS7qM=
-github.com/mlctrez/goapp-mdc v0.1.2 h1:bLpVn0XDoBkIJPWj3MnOdhySUe7iOTrlTfJQZQf97do=
-github.com/mlctrez/goapp-mdc v0.1.2/go.mod h1:sK/8gdxa39zdEzpoKpf2Hn4a3JioVs+ofCcKLylIZF0=
-github.com/mlctrez/goapp-mdc-demo v0.0.0 h1:lcKUhYcJIAXUaE/BRxAHbwb71r+ZEDA94rdLQKfUTL8=
-github.com/mlctrez/goapp-mdc-demo v0.0.0/go.mod h1:l3TfpJiDDFAYSm+EEcEFo0SKHkMLDmCiKInJAAFFpl0=
 github.com/mlctrez/imgtofactbp v1.0.0 h1:aMCmd0Low0yNle4K6eAvNmdqR2bIgjwDbpC0JyXdZsA=
 github.com/mlctrez/imgtofactbp v1.0.0/go.mod h1:dumAIfNBzBvJbAuh7OKbfKlHVI0kwLcCx+eSS7qAqKg=
 github.com/mlctrez/servicego v1.3.1 h1:U5rNaC/RS6racWuElVQbOqID+lkoCjx3bki9TZL8yGc=

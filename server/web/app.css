@@ -1,9 +1,12 @@
 
 html, body {
-    background-color: var(--mdc-theme-background);
-    color: var(--mdc-theme-text-primary-on-background);
     font-family: system-ui, -apple-system, "Segoe UI", "Roboto", "Ubuntu";
-    margin: 0;
+    margin: 0.25em;
+}
+
+.timer {
+    margin: 0.25em;
+    font-size: 1.5em;
 }
 
 .container {
@@ -25,10 +28,9 @@ html, body {
 
 .totp {
     display: inline;
-    background-color: lightblue;
     margin: .15em;
     border-radius: .35em;
-    border: .15em solid black;
+    border: .15em solid darkslategray;
     padding: .15em;
 }
 

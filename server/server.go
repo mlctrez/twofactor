@@ -96,14 +96,12 @@ func BuildHandler() *app.Handler {
 		twofactor.Version = ""
 	}
 	version := twofactor.Version
+	fmt.Printf("version = %q\n", version)
 	return &app.Handler{
 		Author:          "mlctrez",
 		Description:     "Two Factor PWA similar to google authenticator",
 		Name:            "Two Factor",
 		BackgroundColor: "#111",
-		Scripts: []string{
-			"https://cdnjs.cloudflare.com/ajax/libs/material-components-web/13.0.0/material-components-web.js",
-		},
 		Icon: app.Icon{
 			AppleTouch: "https://raw.githubusercontent.com/mlctrez/twofactor/master/server/web/logo-192.png",
 			Default:    "https://raw.githubusercontent.com/mlctrez/twofactor/master/server/web/logo-192.png",
@@ -115,12 +113,10 @@ func BuildHandler() *app.Handler {
 		Version:            version,
 		LoadingLabel:       " ",
 		Styles: []string{
-			"https://fonts.googleapis.com/icon?family=Material+Icons",
-			"https://fonts.googleapis.com/css2?family=Roboto&display=swap",
-			"https://cdnjs.cloudflare.com/ajax/libs/material-components-web/13.0.0/material-components-web.css",
 			"/web/app.css",
 		},
-		Title: "Two Factor",
-		Env:   map[string]string{"DEV": os.Getenv("DEV")},
+		RawHeaders: []string{"<meta content=\"light dark\" name=\"color-scheme\"/>\n"},
+		Title:      "Two Factor",
+		Env:        map[string]string{"DEV": os.Getenv("DEV")},
 	}
 }
