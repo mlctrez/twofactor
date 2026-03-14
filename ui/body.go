@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/dim13/otpauth/migration"
-	fetch "github.com/mlctrez/wasm-fetch"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/dim13/otpauth/migration"
+	fetch "github.com/mlctrez/wasm-fetch"
 
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
 	"github.com/mlctrez/imgtofactbp/components/clipboard"
@@ -28,6 +29,8 @@ type Body struct {
 	parameters   []*migration.Payload_OtpParameters
 	errorMessage string
 	done         chan bool
+	manualName   string
+	manualSecret string
 	start        int64
 	end          int64
 	timer        string
@@ -173,6 +176,27 @@ func (b *Body) edit() app.UI {
 			b.parameters = b.storage.OtpParams
 			b.Update()
 		}),
+		app.Hr(),
+		app.Label().For("manualName").Text("name"),
+		app.Input().ID("manualName").Type("text").Value(b.manualName).OnInput(func(ctx app.Context, e app.Event) {
+			b.manualName = ctx.JSSrc().Get("value").String()
+		}),
+		app.Label().For("manualSecret").Text("secret"),
+		app.Input().ID("manualSecret").Type("text").Value(b.manualSecret).OnInput(func(ctx app.Context, e app.Event) {
+			b.manualSecret = ctx.JSSrc().Get("value").String()
+		}),
+		app.Button().Text("add").OnClick(func(ctx app.Context, e app.Event) {
+			err := b.storage.AddSecret(b.manualName, b.manualSecret)
+			if err != nil {
+				b.errorMessage = err.Error()
+			} else {
+				b.manualName = ""
+				b.manualSecret = ""
+				b.parameters = b.storage.OtpParams
+				store.Write(ctx, b.storage)
+			}
+			b.Update()
+		}),
 	)
 }
 
@@ -222,6 +246,14 @@ func (b *Body) setError(ctx app.Context, err error) {
 }
 
 func (b *Body) clipboardPaste(ctx app.Context, action app.Action) {
+	activeElement := app.Window().Get("document").Get("activeElement")
+	if activeElement.Truthy() {
+		tagName := strings.ToLower(activeElement.Get("tagName").String())
+		if tagName == "input" || tagName == "textarea" {
+			return
+		}
+	}
+
 	data, ok := action.Value.(*clipboard.PasteData)
 	if !ok {
 		return

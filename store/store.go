@@ -3,6 +3,9 @@ package store
 import (
 	"encoding/base32"
 	"fmt"
+	"net/url"
+	"strings"
+
 	otpm "github.com/dim13/otpauth/migration"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/qrcode"
@@ -10,8 +13,6 @@ import (
 	"github.com/mlctrez/imgtofactbp/components/clipboard"
 	"github.com/mlctrez/imgtofactbp/conversions"
 	"github.com/pquerna/otp"
-	"net/url"
-	"strings"
 )
 
 const StorageKey = "twoFactor_storage"
@@ -124,6 +125,27 @@ func (s *Storage) AddTotp(text string) error {
 	newParams, err := parseTotpFromString(text)
 	if err != nil {
 		return err
+	}
+
+	s.OtpParams = append(s.OtpParams, newParams)
+	return nil
+}
+
+func (s *Storage) AddSecret(name, secretText string) error {
+	secret, err := base32.StdEncoding.WithPadding(base32.NoPadding).DecodeString(strings.ToUpper(secretText))
+	if err != nil {
+		secret, err = base32.StdEncoding.DecodeString(strings.ToUpper(secretText))
+		if err != nil {
+			return err
+		}
+	}
+
+	newParams := &otpm.Payload_OtpParameters{
+		Secret:    secret,
+		Name:      name,
+		Algorithm: otpm.Payload_ALGORITHM_SHA1,
+		Digits:    otpm.Payload_DIGIT_COUNT_SIX,
+		Type:      otpm.Payload_OTP_TYPE_TOTP,
 	}
 
 	s.OtpParams = append(s.OtpParams, newParams)
