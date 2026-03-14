@@ -162,10 +162,20 @@ func (s *Storage) Switch(ctx app.Context, start int, end int) {
 }
 
 func (s *Storage) Delete(ctx app.Context, start int, end int) {
+	if start < 0 || start >= len(s.OtpParams) {
+		return
+	}
+	if end < start {
+		end = start
+	}
+	if end >= len(s.OtpParams) {
+		end = len(s.OtpParams) - 1
+	}
+
 	var newParms []*otpm.Payload_OtpParameters
 	for i, param := range s.OtpParams {
-		if i == start && end == 9999 {
-			// nothing
+		if i >= start && i <= end {
+			// skip
 		} else {
 			newParms = append(newParms, param)
 		}
