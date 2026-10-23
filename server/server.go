@@ -71,6 +71,8 @@ func Run() (shutdownFunc func(ctx context.Context) error, err error) {
 		}
 	})
 
+	registerCodeRoutes(engine, "storage.json", time.Now)
+
 	goAppHandler := gin.WrapH(BuildHandler())
 	engine.NoRoute(func(c *gin.Context) {
 		c.Writer.WriteHeader(200)
