@@ -215,10 +215,7 @@ func (b *Body) renderParameterName(i int) app.UI {
 	isEdit := app.IsClient && app.Window().URL().Path == "/edit"
 	param := b.parameters[i]
 
-	var name = param.Name
-	if param.Issuer != "" && !strings.HasPrefix(param.Name, param.Issuer) {
-		name = fmt.Sprintf("%s %s", param.Issuer, param.Name)
-	}
+	name := store.Label(param)
 	if isEdit {
 		name = fmt.Sprintf("%02d %s", i, name)
 	}
