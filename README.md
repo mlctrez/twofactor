@@ -6,7 +6,7 @@ A small TOTP authenticator: a Go WebAssembly web app served by a Go server on po
 
 - Entries are kept in the browser. Click the version text to open edit mode, where you can
   add, rename and delete entries, and upload or download the server copy (`storage.json`).
-- `make run` builds and runs it locally on port `8080`. `make deploy` builds it and installs it on `dune`.
+- `make run` builds and runs it locally on port `8080`. `make deploy` builds it and installs it on the deploy host named in the `Makefile`.
 
 ## API
 
@@ -14,7 +14,7 @@ A small TOTP authenticator: a Go WebAssembly web app served by a Go server on po
 - `GET /api/code?label=<label>` returns the current code for one entry.
 
 ```shell
-curl -s --get http://dune:9000/api/code --data-urlencode 'label=Example alice' | jq -r .code
+curl -s --get http://<host>:9000/api/code --data-urlencode 'label=Example alice' | jq -r .code
 ```
 
 ## Security
