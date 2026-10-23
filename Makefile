@@ -23,8 +23,8 @@ binary: wasm
 		cmd/twofactor/twofactor.go
 
 deploy: binary
-	scp temp/twofactor goservice:/tmp
-	ssh goservice sudo /tmp/twofactor -action deploy
+	scp temp/twofactor dune:/tmp
+	ssh dune sudo /tmp/twofactor -action deploy
 
 
 
