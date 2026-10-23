@@ -34,6 +34,9 @@ type Body struct {
 	start        int64
 	end          int64
 	timer        string
+	editIndex    int
+	editIssuer   string
+	editName     string
 }
 
 func (b *Body) OnAppUpdate(context app.Context) {
@@ -48,6 +51,7 @@ func (b *Body) OnInit() {
 	b.clipboard = &clipboard.Clipboard{ID: "clipboard"}
 	b.storage = &store.Storage{}
 	b.done = make(chan bool, 2)
+	b.editIndex = -1
 }
 
 func (b *Body) progressLoop(ctx app.Context) {
@@ -127,10 +131,12 @@ func (b *Body) edit() app.UI {
 			}
 		}),
 		app.Button().Text("switch").OnClick(func(ctx app.Context, e app.Event) {
+			b.cancelRename()
 			b.storage.Switch(ctx, int(b.start), int(b.end))
 			b.Update()
 		}),
 		app.Button().Text("delete").OnClick(func(ctx app.Context, e app.Event) {
+			b.cancelRename()
 			b.storage.Delete(ctx, int(b.start), int(b.end))
 			b.parameters = b.storage.OtpParams
 			b.Update()
@@ -171,6 +177,7 @@ func (b *Body) edit() app.UI {
 				b.errorMessage = err.Error()
 				return
 			}
+			b.cancelRename()
 			store.Write(ctx, downloadStorage)
 			store.Read(ctx, b.storage)
 			b.parameters = b.storage.OtpParams
@@ -202,12 +209,73 @@ func (b *Body) edit() app.UI {
 
 func (b *Body) renderParameterN(i int) app.UI {
 	param := b.parameters[i]
-	return app.Div().Class("row").Body(
+	isEdit := app.IsClient && app.Window().URL().Path == "/edit"
+	row := []app.UI{
 		app.Span().Class("totp").Text(param.EvaluateString()).OnClick(func(ctx app.Context, e app.Event) {
 			b.clipboard.WriteText(param.EvaluateString())
 		}),
-		b.renderParameterName(i),
-		//app.Span().Class("name").Text(base32.StdEncoding.EncodeToString(param.Secret)),
+	}
+	switch {
+	case isEdit && b.editIndex == i:
+		row = append(row, b.renderRename(i))
+	case isEdit:
+		row = append(row, b.renderParameterName(i),
+			app.Button().Text("rename").OnClick(func(ctx app.Context, e app.Event) {
+				b.startRename(i)
+			}))
+	default:
+		row = append(row, b.renderParameterName(i))
+	}
+	//app.Span().Class("name").Text(base32.StdEncoding.EncodeToString(param.Secret)),
+	return app.Div().Class("row").Body(row...)
+}
+
+func (b *Body) startRename(i int) {
+	if i < 0 || i >= len(b.parameters) {
+		return
+	}
+	b.editIndex = i
+	b.editIssuer = b.parameters[i].Issuer
+	b.editName = b.parameters[i].Name
+	b.errorMessage = ""
+	b.Update()
+}
+
+func (b *Body) cancelRename() {
+	b.editIndex = -1
+	b.editIssuer = ""
+	b.editName = ""
+}
+
+func (b *Body) renderRename(i int) app.UI {
+	issuerID := fmt.Sprintf("renameIssuer%d", i)
+	nameID := fmt.Sprintf("renameName%d", i)
+	return app.Span().Class("name").Body(
+		app.Text(fmt.Sprintf("%02d ", i)),
+		app.Label().For(issuerID).Text("issuer"),
+		app.Input().ID(issuerID).Type("text").Value(b.editIssuer).OnInput(func(ctx app.Context, e app.Event) {
+			b.editIssuer = ctx.JSSrc().Get("value").String()
+		}),
+		app.Label().For(nameID).Text("name"),
+		app.Input().ID(nameID).Type("text").Value(b.editName).OnInput(func(ctx app.Context, e app.Event) {
+			b.editName = ctx.JSSrc().Get("value").String()
+		}),
+		app.Button().Text("save").OnClick(func(ctx app.Context, e app.Event) {
+			if err := b.storage.Rename(i, b.editIssuer, b.editName); err != nil {
+				b.errorMessage = err.Error()
+				b.Update()
+				return
+			}
+			b.parameters = store.Write(ctx, b.storage)
+			b.cancelRename()
+			b.errorMessage = ""
+			b.Update()
+		}),
+		app.Button().Text("cancel").OnClick(func(ctx app.Context, e app.Event) {
+			b.cancelRename()
+			b.errorMessage = ""
+			b.Update()
+		}),
 	)
 }
 
