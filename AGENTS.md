@@ -15,5 +15,5 @@ gitignored, so don't commit them.
 
 ## Deploy
 
-mlctrez deploys twofactor. Agents never deploy it (don't run `make deploy`);
+The repository owner deploys twofactor. Agents never deploy it (don't run `make deploy`);
 after a PR is merged and tagged, just report that.
